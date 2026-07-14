@@ -1,0 +1,6 @@
+{
+  "name": "LLMOps Platform",
+  "description": "Enterprise-level Local/Cloud hybrid LLMOps platform dashboard.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

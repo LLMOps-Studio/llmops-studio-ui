@@ -1,0 +1,21 @@
+# CRITICAL: without this file, `docker compose build` sends the entire
+# node_modules/ folder (hundreds of MB, host-specific native binaries) to
+# the Docker daemon on every single build. On top of being wasteful, those
+# node_modules were built for the HOST OS/arch, not the node:18-alpine
+# builder stage, so they were also liable to break the `npm install` step.
+# This is almost certainly what made `docker compose up` appear to lock up
+# the machine.
+node_modules
+dist
+build
+coverage
+.git
+.gitignore
+.env
+.env.*
+!.env.example
+*.log
+.DS_Store
+.vscode
+.idea
+package-lock.json
