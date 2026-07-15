@@ -7,6 +7,8 @@ import {
   FileJson,
   MessageSquareCode,
   BrainCircuit,
+  Workflow,
+  ListChecks,
 } from 'lucide-react';
 
 interface SidebarProps {
@@ -16,12 +18,13 @@ interface SidebarProps {
 
 const navItems = [
   { id: 'dashboard', label: 'Dashboard', icon: LayoutDashboard },
+  { id: 'studio', label: 'Workflow Studio', icon: Workflow },
   { id: 'rag-benchmark', label: 'RAG Benchmark Lab', icon: LineChart },
   { id: 'promptops', label: 'PromptOps Lab', icon: GitMerge },
   { id: 'schema', label: 'Schema Lab', icon: FileJson },
   { id: 'review', label: 'Review Lab', icon: MessageSquareCode },
   { id: 'memory', label: 'Memory Lab', icon: BrainCircuit },
-  { id: 'studio', label: 'Workflow Studio', icon: BrainCircuit },
+  { id: 'batch', label: 'Batch Evaluation', icon: ListChecks },
 ];
 
 export function Sidebar({ activeTab, setActiveTab }: SidebarProps) {
@@ -33,7 +36,7 @@ export function Sidebar({ activeTab, setActiveTab }: SidebarProps) {
             <div className="hidden dark:block w-4 h-4 bg-white/20 rounded-full blur-[1px]"></div>
             <BrainCircuit className="w-5 h-5 dark:hidden" />
           </div>
-          <span>Omni<span className="text-purple-500">Ops</span></span>
+          <span>LLMOps<span className="text-purple-500">Studio</span></span>
         </div>
       </div>
       <div className="flex-1 overflow-y-auto py-4 px-3 space-y-1">

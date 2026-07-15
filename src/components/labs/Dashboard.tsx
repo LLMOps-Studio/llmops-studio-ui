@@ -3,6 +3,7 @@ import {
   LineChart, Line, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer
 } from 'recharts';
 import axios from 'axios';
+import { API_BASE_URL } from '../../lib/api';
 import { Download, FileText, Activity } from 'lucide-react';
 
 interface RunData {
@@ -30,7 +31,7 @@ export const Dashboard: React.FC = () => {
     const fetchDashboardData = async () => {
       try {
         setIsLoading(true);
-        const response = await axios.get('http://localhost:8000/api/v1/dashboard');
+        const response = await axios.get(`${API_BASE_URL}/dashboard`);
         setRuns(response.data.runs);
         setError(null);
       } catch (err: any) {
@@ -125,6 +126,13 @@ export const Dashboard: React.FC = () => {
         <div className="bg-white dark:bg-gray-900 p-5 rounded-xl shadow-sm border border-gray-200 dark:border-gray-800">
           <h3 className="text-lg font-semibold text-gray-800 dark:text-gray-200 mb-4">Accuracy Optimization (Score)</h3>
           <div className="h-72 w-full">
+            {chartData.length === 0 ? (
+              <div className="h-full w-full flex flex-col items-center justify-center text-center text-gray-500 dark:text-gray-500">
+                <Activity className="mb-3 opacity-40" size={32} />
+                <p className="text-sm font-medium">No evaluation runs yet</p>
+                <p className="text-xs mt-1 max-w-xs">Run a pipeline in RAG Benchmark Lab or Workflow Studio to see faithfulness/relevance scores here.</p>
+              </div>
+            ) : (
             <ResponsiveContainer width="100%" height="100%">
               <BarChart data={chartData} margin={{ top: 5, right: 30, left: 20, bottom: 5 }}>
                 <CartesianGrid strokeDasharray="3 3" stroke="#374151" vertical={false} />
@@ -136,12 +144,20 @@ export const Dashboard: React.FC = () => {
                 <Bar dataKey="relevance" fill="#3b82f6" name="Relevance" radius={[4, 4, 0, 0]} maxBarSize={50} />
               </BarChart>
             </ResponsiveContainer>
+            )}
           </div>
         </div>
 
         <div className="bg-white dark:bg-gray-900 p-5 rounded-xl shadow-sm border border-gray-200 dark:border-gray-800">
           <h3 className="text-lg font-semibold text-gray-800 dark:text-gray-200 mb-4">Edge Hardware Throughput (TPS)</h3>
           <div className="h-72 w-full">
+            {chartData.length === 0 ? (
+              <div className="h-full w-full flex flex-col items-center justify-center text-center text-gray-500 dark:text-gray-500">
+                <Activity className="mb-3 opacity-40" size={32} />
+                <p className="text-sm font-medium">No throughput data yet</p>
+                <p className="text-xs mt-1 max-w-xs">Latency and tokens/sec appear here once a lab run logs hardware metrics to MLflow.</p>
+              </div>
+            ) : (
             <ResponsiveContainer width="100%" height="100%">
               <LineChart data={chartData} margin={{ top: 5, right: 30, left: 20, bottom: 5 }}>
                 <CartesianGrid strokeDasharray="3 3" stroke="#374151" vertical={false} />
@@ -154,6 +170,7 @@ export const Dashboard: React.FC = () => {
                 <Line yAxisId="right" type="monotone" dataKey="tps" stroke="#8b5cf6" name="Tokens / Sec" strokeWidth={2} dot={{ r: 4 }} activeDot={{ r: 6 }} />
               </LineChart>
             </ResponsiveContainer>
+            )}
           </div>
         </div>
       </div>

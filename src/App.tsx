@@ -8,13 +8,54 @@ import { SchemaLab } from './components/labs/SchemaLab';
 import { ReviewLab } from './components/labs/ReviewLab';
 import { MemoryLab } from './components/labs/MemoryLab';
 import { BatchEvalLab } from './components/labs/BatchEvalLab';
-// YENİ: Studio Canvas'ı dahil ediyoruz
 import { StudioCanvas } from './components/studio/StudioCanvas';
 
+const TAB_TITLES: Record<string, string> = {
+  dashboard: 'Dashboard',
+  studio: 'Workflow Studio',
+  'rag-benchmark': 'RAG Benchmark Lab',
+  promptops: 'PromptOps Lab',
+  schema: 'Schema Lab',
+  review: 'Review Lab',
+  memory: 'Memory Lab',
+  batch: 'Batch Evaluation Lab',
+};
+
+// Every entry here is rendered as its own component. `id` matches Sidebar's
+// navItems ids. `noPadding` mirrors the special full-bleed layout StudioCanvas
+// needs (it manages its own scroll/canvas area).
+const TABS: { id: string; render: () => React.ReactNode; noPadding?: boolean }[] = [
+  { id: 'dashboard', render: () => <Dashboard /> },
+  { id: 'studio', render: () => <StudioCanvas />, noPadding: true },
+  { id: 'rag-benchmark', render: () => <RAGBenchmarkLab /> },
+  { id: 'promptops', render: () => <PromptOpsLab /> },
+  { id: 'schema', render: () => <SchemaLab /> },
+  { id: 'review', render: () => <ReviewLab /> },
+  { id: 'memory', render: () => <MemoryLab /> },
+  { id: 'batch', render: () => <BatchEvalLab /> },
+];
+
 export default function App() {
-  // YENİ: Varsayılan ana ekranımız artık 'studio'
-  const [activeTab, setActiveTab] = useState('studio');
+  const [activeTab, setActiveTab] = useState('dashboard');
   const [theme, setTheme] = useState<'light' | 'dark'>('dark');
+
+  // Tabs the user has actually opened. Once a tab is visited it's added
+  // here and never removed, so its component stays mounted (state intact)
+  // for the rest of the session -- switching away just hides it with CSS
+  // instead of unmounting it. This is what fixes "switching pages loses
+  // the running test's state": previously `renderContent()` used a plain
+  // switch statement, so navigating away destroyed the previous tab's
+  // component instance (and every useState inside it) entirely.
+  const [visitedTabs, setVisitedTabs] = useState<Set<string>>(new Set(['dashboard']));
+
+  useEffect(() => {
+    setVisitedTabs(prev => {
+      if (prev.has(activeTab)) return prev;
+      const next = new Set(prev);
+      next.add(activeTab);
+      return next;
+    });
+  }, [activeTab]);
 
   // Initialize theme
   useEffect(() => {
@@ -30,45 +71,25 @@ export default function App() {
     setTheme(prev => prev === 'light' ? 'dark' : 'light');
   };
 
-  const getTabTitle = () => {
-    switch (activeTab) {
-      case 'studio': return 'LLMOps Studio (DAG Pipeline)';
-      case 'dashboard': return 'Analytics Dashboard';
-      case 'rag-benchmark': return 'RAG Benchmark Lab (Standalone)';
-      case 'promptops': return 'PromptOps Lab (Standalone)';
-      case 'schema': return 'Schema Lab (Standalone)';
-      case 'review': return 'Review Lab (Standalone)';
-      case 'memory': return 'Memory Lab (Standalone)';
-      case 'batch': return 'Batch Evaluation Lab (Standalone)';
-      default: return 'LLMOps Platform';
-    }
-  };
-
-  const renderContent = () => {
-    switch (activeTab) {
-      case 'studio': return <StudioCanvas />;
-      case 'dashboard': return <Dashboard />;
-      case 'rag-benchmark': return <RAGBenchmarkLab />;
-      case 'promptops': return <PromptOpsLab />;
-      case 'schema': return <SchemaLab />;
-      case 'review': return <ReviewLab />;
-      case 'memory': return <MemoryLab />;
-      case 'batch': return <BatchEvalLab />;
-      default: return <StudioCanvas />;
-    }
-  };
+  const activeTabTitle = TAB_TITLES[activeTab] ?? 'LLMOps Studio';
 
   return (
     <div className="flex h-screen overflow-hidden bg-gray-50 dark:bg-gray-950">
       <Sidebar activeTab={activeTab} setActiveTab={setActiveTab} />
-      
+
       <div className="flex-1 flex flex-col h-full overflow-hidden">
-        <Header theme={theme} toggleTheme={toggleTheme} activeTabTitle={getTabTitle()} />
-        {/* StudioCanvas kendi scroll yönetimine sahip olduğu için p-6 padding'ini kaldırıyoruz veya opsiyonel yapıyoruz */}
+        <Header theme={theme} toggleTheme={toggleTheme} activeTabTitle={activeTabTitle} />
         <main className={`flex-1 overflow-y-auto ${activeTab === 'studio' ? '' : 'p-6'}`}>
-          <div className={`${activeTab === 'studio' ? 'h-full w-full' : 'max-w-7xl mx-auto h-full'}`}>
-            {renderContent()}
-          </div>
+          {TABS.filter(tab => visitedTabs.has(tab.id)).map(tab => (
+            <div
+              key={tab.id}
+              // hidden (not unmounted) when inactive -- keeps component state alive
+              style={{ display: activeTab === tab.id ? 'block' : 'none' }}
+              className={tab.noPadding ? 'h-full w-full' : 'max-w-7xl mx-auto h-full'}
+            >
+              {tab.render()}
+            </div>
+          ))}
         </main>
       </div>
     </div>
