@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import axios from 'axios';
 import { Play, FileSearch, BarChart2 } from 'lucide-react';
+import { RAG_LAB_URL } from '../../lib/config';
 
 export const RAGBenchmarkLab: React.FC = () => {
   const [experimentName, setExperimentName] = useState('rag_test_01');
@@ -35,7 +36,7 @@ export const RAGBenchmarkLab: React.FC = () => {
       };
 
       // 8002 portundaki gerçek RAG Benchmark API'sine istek atıyoruz
-      const response = await axios.post('http://localhost:8002/benchmark', payload);
+      const response = await axios.post(`${RAG_LAB_URL}/benchmark`, payload);
       setResults(response.data.results);
       
       setToastMessage({ title: 'Benchmark Complete', message: 'RAG grid search evaluated successfully.', type: 'success' });

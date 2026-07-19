@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import axios from 'axios';
 import { Play, Database, UploadCloud, BarChart2, AlertCircle, CheckCircle, XCircle } from 'lucide-react';
+import { STUDIO_CORE_URL, RAG_LAB_URL } from '../../lib/config';
 
 interface DatasetItem {
   query: string;
@@ -28,7 +29,7 @@ export const BatchEvalLab: React.FC = () => {
   useEffect(() => {
     const fetchModels = async () => {
       try {
-        const response = await axios.get('http://localhost:8000/api/v1/models');
+        const response = await axios.get(`${STUDIO_CORE_URL}/models`);
         if (response.data.models && response.data.models.length > 0) {
           setAvailableModels(response.data.models);
           setSelectedModel(response.data.models[0]);
@@ -89,7 +90,7 @@ export const BatchEvalLab: React.FC = () => {
         chunk_overlap: 30
       };
 
-      const response = await axios.post('http://localhost:8002/batch-evaluate', payload);
+      const response = await axios.post(`${RAG_LAB_URL}/batch-evaluate`, payload);
       setResults(response.data);
       
       setToastMessage({ title: 'Batch Evaluation Complete', message: 'Regression test executed successfully.', type: 'success' });
