@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import axios from 'axios';
 import { Play, Code, MessageSquare } from 'lucide-react';
+import { REVIEW_LAB_URL } from '../../lib/config';
 
 export const ReviewLab: React.FC = () => {
   const [codeSnippet, setCodeSnippet] = useState<string>(
@@ -18,7 +19,7 @@ export const ReviewLab: React.FC = () => {
     setToastMessage(null);
     
     try {
-      const response = await axios.post('http://localhost:8005/review', {
+      const response = await axios.post(`${REVIEW_LAB_URL}/review`, {
         code_snippet: codeSnippet
       });
       setResults(response.data);

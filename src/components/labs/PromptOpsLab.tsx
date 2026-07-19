@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import axios from 'axios';
 import { Play, Settings2, FileText } from 'lucide-react';
+import { PROMPTOPS_LAB_URL } from '../../lib/config';
 
 export const PromptOpsLab: React.FC = () => {
   const [selectedPrompt, setSelectedPrompt] = useState('v1');
@@ -17,7 +18,7 @@ export const PromptOpsLab: React.FC = () => {
     setToastMessage(null);
     
     try {
-      const response = await axios.post('http://localhost:8003/evaluate', {
+      const response = await axios.post(`${PROMPTOPS_LAB_URL}/evaluate`, {
         prompt_version: selectedPrompt,
         model: selectedModel // Ready for when backend supports model switching
       });

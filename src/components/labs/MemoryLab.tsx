@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import axios from 'axios';
 import { Send, BrainCircuit, User, Bot, AlertCircle } from 'lucide-react';
+import { MEMORY_LAB_URL } from '../../lib/config';
 
 interface Message {
   role: 'user' | 'assistant';
@@ -26,7 +27,7 @@ export const MemoryLab: React.FC = () => {
     setError(null);
     
     try {
-      const response = await axios.post('http://localhost:8006/chat', {
+      const response = await axios.post(`${MEMORY_LAB_URL}/chat`, {
         session_id: sessionId,
         message: userMessage.content,
         history: currentHistory

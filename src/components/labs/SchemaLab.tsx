@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import axios from 'axios';
 import { Play, Database, FileJson, AlertCircle } from 'lucide-react';
+import { SCHEMA_LAB_URL } from '../../lib/config';
 
 export const SchemaLab: React.FC = () => {
   const [rawText, setRawText] = useState<string>(
@@ -19,7 +20,7 @@ export const SchemaLab: React.FC = () => {
     
     try {
       // Direct call to the standalone Schema API on port 8004
-      const response = await axios.post('http://localhost:8004/extract', {
+      const response = await axios.post(`${SCHEMA_LAB_URL}/extract`, {
         raw_text: rawText
       });
       setResults(response.data.extracted_data);

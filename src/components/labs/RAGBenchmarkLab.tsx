@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import axios from 'axios';
 import { Play, FileSearch, BarChart2 } from 'lucide-react';
+import { RAG_LAB_URL } from '../../lib/config';
 
 export const RAGBenchmarkLab: React.FC = () => {
   const [experimentName, setExperimentName] = useState('rag_test_01');
@@ -34,8 +35,7 @@ export const RAGBenchmarkLab: React.FC = () => {
         models: selectedModels
       };
 
-      // 8002 portundaki gerçek RAG Benchmark API'sine istek atıyoruz
-      const response = await axios.post('http://localhost:8002/benchmark', payload);
+      const response = await axios.post(`${RAG_LAB_URL}/benchmark`, payload);
       setResults(response.data.results);
       
       setToastMessage({ title: 'Benchmark Complete', message: 'RAG grid search evaluated successfully.', type: 'success' });
@@ -115,7 +115,7 @@ export const RAGBenchmarkLab: React.FC = () => {
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        {/* Sol Sütun: Konfigürasyon */}
+        {}
         <div className="col-span-1 space-y-6">
           <div className="bg-white dark:bg-gray-900 p-5 rounded-xl shadow-sm border border-gray-200 dark:border-gray-800">
             <h3 className="text-lg font-semibold text-gray-800 dark:text-gray-200 mb-4">Grid Configuration</h3>
@@ -171,7 +171,7 @@ export const RAGBenchmarkLab: React.FC = () => {
           </div>
         </div>
 
-        {/* Sağ Sütun: Sonuçlar */}
+        {}
         <div className="col-span-1 lg:col-span-2">
           <div className="bg-white dark:bg-gray-900 p-5 rounded-xl shadow-sm border border-gray-200 dark:border-gray-800 min-h-[500px] flex flex-col relative">
             <h3 className="text-lg font-semibold text-gray-800 dark:text-gray-200 mb-4 flex items-center justify-between gap-2">
