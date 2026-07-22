@@ -1,6 +1,6 @@
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import axios from 'axios';
-import { Play, FileSearch, BarChart2 } from 'lucide-react';
+import { Play, FileSearch, BarChart2, UploadCloud, X } from 'lucide-react';
 import { RAG_LAB_URL } from '../../lib/config';
 
 export const RAGBenchmarkLab: React.FC = () => {
@@ -9,6 +9,11 @@ export const RAGBenchmarkLab: React.FC = () => {
   const [testQueries, setTestQueries] = useState('What is Apache Kafka used for?');
   const [chunkSizes, setChunkSizes] = useState('100, 200');
   const [chunkOverlaps, setChunkOverlaps] = useState('10, 20');
+
+  const [uploadedFileName, setUploadedFileName] = useState<string | null>(null);
+  const [isUploading, setIsUploading] = useState(false);
+  const [uploadError, setUploadError] = useState<string | null>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
   
   // Yerel Ollama modelleri
   const availableModels = ['phi3:latest', 'qwen2.5:3b', 'llama3:8b'];
@@ -19,6 +24,33 @@ export const RAGBenchmarkLab: React.FC = () => {
   
   // Custom Toast State for Error/Success handling 
   const [toastMessage, setToastMessage] = useState<{title: string, message: string, type: 'error' | 'success'} | null>(null);
+
+  const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    setIsUploading(true);
+    setUploadError(null);
+
+    try {
+      const formData = new FormData();
+      formData.append('file', file);
+      const response = await axios.post(`${RAG_LAB_URL}/extract-document`, formData);
+      setRawText(response.data.text);
+      setUploadedFileName(file.name);
+    } catch (err: any) {
+      setUploadError(err.response?.data?.detail || err.message || 'Document upload failed');
+      setUploadedFileName(null);
+    } finally {
+      setIsUploading(false);
+      if (fileInputRef.current) fileInputRef.current.value = '';
+    }
+  };
+
+  const clearUploadedFile = () => {
+    setUploadedFileName(null);
+    setUploadError(null);
+  };
 
   const handleRunBenchmark = async () => {
     setIsRunning(true);
@@ -128,8 +160,36 @@ export const RAGBenchmarkLab: React.FC = () => {
               </div>
 
               <div>
-                <label className="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">Raw Text (Knowledge Base)</label>
-                <textarea value={rawText} onChange={(e) => setRawText(e.target.value)} className="w-full p-2 bg-gray-50 dark:bg-gray-800 border border-gray-300 dark:border-gray-700 rounded-lg text-sm text-gray-900 dark:text-white h-24 resize-none focus:ring-2 focus:ring-blue-500 outline-none transition-colors" />
+                <div className="flex items-center justify-between mb-1">
+                  <label className="block text-xs font-medium text-gray-700 dark:text-gray-300">Raw Text (Knowledge Base)</label>
+                  <label className="flex items-center gap-1 text-xs font-medium text-blue-600 dark:text-blue-400 hover:underline cursor-pointer">
+                    <UploadCloud size={13} />
+                    {isUploading ? 'Uploading...' : 'Upload document'}
+                    <input
+                      ref={fileInputRef}
+                      type="file"
+                      accept=".txt,.md,.pdf"
+                      onChange={handleFileUpload}
+                      disabled={isUploading}
+                      className="hidden"
+                    />
+                  </label>
+                </div>
+
+                {uploadedFileName && (
+                  <div className="flex items-center justify-between mb-1.5 text-xs bg-blue-50 dark:bg-blue-900/20 text-blue-700 dark:text-blue-300 px-2 py-1 rounded-md">
+                    <span className="truncate">📄 {uploadedFileName}</span>
+                    <button onClick={clearUploadedFile} className="text-blue-400 hover:text-blue-700 dark:hover:text-blue-200 shrink-0 ml-2">
+                      <X size={13} />
+                    </button>
+                  </div>
+                )}
+                {uploadError && (
+                  <p className="text-xs text-red-600 dark:text-red-400 mb-1.5">{uploadError}</p>
+                )}
+
+                <textarea value={rawText} onChange={(e) => { setRawText(e.target.value); setUploadedFileName(null); }} className="w-full p-2 bg-gray-50 dark:bg-gray-800 border border-gray-300 dark:border-gray-700 rounded-lg text-sm text-gray-900 dark:text-white h-24 resize-none focus:ring-2 focus:ring-blue-500 outline-none transition-colors" />
+                <p className="text-[11px] text-gray-400 dark:text-gray-500 mt-1">Supported uploads: .txt, .md, .pdf — or paste/edit text directly above.</p>
               </div>
 
               <div>
