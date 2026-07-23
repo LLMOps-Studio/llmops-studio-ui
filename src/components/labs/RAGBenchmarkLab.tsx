@@ -1,7 +1,7 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import axios from 'axios';
 import { Play, FileSearch, BarChart2, UploadCloud, X } from 'lucide-react';
-import { RAG_LAB_URL } from '../../lib/config';
+import { RAG_LAB_URL, STUDIO_CORE_URL } from '../../lib/config';
 
 export const RAGBenchmarkLab: React.FC = () => {
   const [experimentName, setExperimentName] = useState('rag_test_01');
@@ -15,9 +15,27 @@ export const RAGBenchmarkLab: React.FC = () => {
   const [uploadError, setUploadError] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   
-  // Yerel Ollama modelleri
-  const availableModels = ['phi3:latest', 'qwen2.5:3b', 'llama3:8b'];
+  // Auto-discovered from whichever Ollama studio-core is pointed at (see
+  // src/lib/config.ts / docker-compose.finwise-eval.yml) -- was a
+  // hardcoded 3-model list before, so e.g. finwise_scribe_v1 could never
+  // show up here even once it was actually loaded and reachable.
+  const [availableModels, setAvailableModels] = useState<string[]>(['phi3:latest', 'qwen2.5:3b', 'llama3:8b']);
   const [selectedModels, setSelectedModels] = useState<string[]>(['phi3:latest']);
+
+  useEffect(() => {
+    const fetchModels = async () => {
+      try {
+        const response = await axios.get(`${STUDIO_CORE_URL}/models`);
+        if (response.data.models && response.data.models.length > 0) {
+          setAvailableModels(response.data.models);
+          setSelectedModels([response.data.models[0]]);
+        }
+      } catch (err) {
+        console.warn('Model auto-discovery failed, using fallback list.', err);
+      }
+    };
+    fetchModels();
+  }, []);
 
   const [isRunning, setIsRunning] = useState(false);
   const [results, setResults] = useState<any>(null);

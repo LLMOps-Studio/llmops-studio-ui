@@ -1,12 +1,32 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { Play, Settings2, FileText, Download } from 'lucide-react';
-import { PROMPTOPS_LAB_URL } from '../../lib/config';
+import { PROMPTOPS_LAB_URL, STUDIO_CORE_URL } from '../../lib/config';
 
 export const PromptOpsLab: React.FC = () => {
   const [mode, setMode] = useState<'preset' | 'custom'>('preset');
   const [selectedPrompt, setSelectedPrompt] = useState('v1');
+
+  // Auto-discovered from whichever Ollama studio-core is pointed at (was a
+  // hardcoded 3-model list before -- finwise_scribe_v1 or any other real
+  // model could never appear here even once loaded and reachable).
+  const [models, setModels] = useState<string[]>(['phi3:latest', 'qwen2.5:3b', 'llama3:8b']);
   const [selectedModel, setSelectedModel] = useState('phi3:latest');
+
+  useEffect(() => {
+    const fetchModels = async () => {
+      try {
+        const response = await axios.get(`${STUDIO_CORE_URL}/models`);
+        if (response.data.models && response.data.models.length > 0) {
+          setModels(response.data.models);
+          setSelectedModel(response.data.models[0]);
+        }
+      } catch (err) {
+        console.warn('Model auto-discovery failed, using fallback list.', err);
+      }
+    };
+    fetchModels();
+  }, []);
 
   const [customLabel, setCustomLabel] = useState('v3');
   const [customTemplate, setCustomTemplate] = useState(
@@ -18,8 +38,6 @@ export const PromptOpsLab: React.FC = () => {
   const [isEvaluating, setIsEvaluating] = useState(false);
   const [results, setResults] = useState<any>(null);
   const [toastMessage, setToastMessage] = useState<{title: string, message: string, type: 'error' | 'success'} | null>(null);
-
-  const models = ['phi3:latest', 'qwen2.5:3b', 'llama3:8b'];
 
   const customTemplateHasPlaceholders =
     customTemplate.includes('{context}') && customTemplate.includes('{question}');
